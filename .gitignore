@@ -1,0 +1,6 @@
+.idea
+db/*
+wp/*
+
+# openoffice temp files
+.~lock*
