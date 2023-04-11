@@ -19,8 +19,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./wp/wp-content:/var/www/html/wp-content
-      # Add other files or folders that you want to override here e.g. stylesheets
+      - ./wp:/var/www/html
     ports:
       - "8880:80"
     restart: always
