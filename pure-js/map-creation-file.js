@@ -1,5 +1,3 @@
-
-
 var map = L.map('map-file', { center: [52.5051, 13.4334], zoom: 13 });
 
 L.tileLayer(
