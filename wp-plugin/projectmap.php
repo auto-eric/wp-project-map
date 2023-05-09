@@ -23,6 +23,7 @@ function projectmap_setup_post_type()
                 'name' => __('Projekte', 'textdomain'),
                 'singular_name' => __('Projekt', 'textdomain'),
             ),
+            'taxonomies' => ['category'],
             'supports' => ['title', 'revisions', 'custom_fields'],
         ]
     );
@@ -70,19 +71,30 @@ function projectmap_add_post_metaboxes()
 ;
 add_action('add_meta_boxes', 'projectmap_add_post_metaboxes');
 
-function register_meta_boxes()
+function projectmap_register_rest_fields()
 {
-    register_post_meta(
-        PLUGIN_NAME, 
-        PLUGIN_NAME . '-category',
+    register_rest_field(
+        PLUGIN_NAME,
+        'meta',
         [
-            'type' => 'string',
-            'single' => true,
-            'show_in_rest' => true,
+            'get_callback' => 'projectmap_get_post_meta_for_api',
+            'schema' => null,
         ]
     );
 }
-add_action('init', 'register_meta_boxes');
+add_action('rest_api_init', 'projectmap_register_rest_fields');
+
+function projectmap_get_post_meta_for_api($object)
+{
+    $post_id = $object['id'];
+    $meta = get_post_meta($post_id);
+    return [
+        "category" => $meta['projectmap-category'][0],
+        "description" => $meta['projectmap-description'][0],
+        "link" => $meta['projectmap-link'][0],
+        "geojson" => $meta['projectmap-geojson'][0],
+    ];
+}
 
 function projectmap_field_render_category()
 {
@@ -113,7 +125,7 @@ function projectmap_field_render_geojson()
     global $post;
     $custom = get_post_custom($post->ID);
     $geojson = $custom[PLUGIN_NAME . '-geojson'][0];
-    echo '<textarea name="_geojson" placeholder="GeoJSON" cols=100>' . $geojson . '</textarea>';
+    echo '<p>You can generate GeoJSON on  <a href="http://geojson.io">http://geojson.io</a></p> <textarea name="_geojson" placeholder="GeoJSON" cols=100>' . $geojson . '</textarea>';
 }
 
 function projectmap_save_project()
