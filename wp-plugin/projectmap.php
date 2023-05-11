@@ -1,9 +1,11 @@
 <?php
 /*
  * Plugin Name: Project Map
- * Description: Brings custom type Project and can show these projects on a map.
+ * Plugin-URI: https://github.com/auto-eric/wp-project-map
+ * Description: Stellt eine Karte mit Projekten bereit.
  * Author: Eric Härtel
  * Author-URI: https://github.com/auto-eric/
+ * 
  */
 
 defined('ABSPATH') or die("No direct script access allowed.");
@@ -36,6 +38,15 @@ function projectmap_add_post_metaboxes()
         PLUGIN_NAME . '-category',
         'Kategorie',
         'projectmap_field_render_category',
+        PLUGIN_NAME,
+        'normal',
+        'high'
+    );
+
+    add_meta_box(
+        PLUGIN_NAME . '-status',
+        'Status',
+        'projectmap_field_render_status',
         PLUGIN_NAME,
         'normal',
         'high'
@@ -89,6 +100,7 @@ function projectmap_get_post_meta_for_api($object)
     $post_id = $object['id'];
     $meta = get_post_meta($post_id);
     return [
+        "status" => isset($meta['projectmap-status'][0]) ? $meta['projectmap-status'][0] : '',
         "category" => $meta['projectmap-category'][0],
         "description" => $meta['projectmap-description'][0],
         "link" => $meta['projectmap-link'][0],
@@ -102,6 +114,29 @@ function projectmap_field_render_category()
     $custom = get_post_custom($post->ID);
     $category = $custom[PLUGIN_NAME . '-category'][0];
     echo '<input type="text" name="_category" value="' . $category . '" placeholder="Kategorie" />';
+}
+
+function projectmap_field_render_status()
+{
+    global $post;
+    $custom = get_post_custom($post->ID);
+    $status = $custom[PLUGIN_NAME . '-status'][0];
+    echo '<select name="_status" >';
+    if (!isset($status)) {
+        echo '<option value="" selected disabled>Auswählen...</option>';
+    }
+    if ($status === 'planed') {
+        echo '<option value="planed">geplant</option>';
+    } else {
+        echo '<option>geplant</option>';
+    }
+    ;
+    if ($status === 'done') {
+        echo '<option value="done">umgesetzt</option>';
+    } else {
+        echo '<option>umgesetzt</option>';
+    }
+    echo '</select>';
 }
 
 function projectmap_field_render_link()
@@ -125,7 +160,7 @@ function projectmap_field_render_geojson()
     global $post;
     $custom = get_post_custom($post->ID);
     $geojson = $custom[PLUGIN_NAME . '-geojson'][0];
-    echo '<p>You can generate GeoJSON on  <a href="http://geojson.io">http://geojson.io</a></p> <textarea name="_geojson" placeholder="GeoJSON" cols=100>' . $geojson . '</textarea>';
+    echo '<p>You can generate GeoJSON on  <a href="http://geojson.io/#map=13.26/52.51117/13.42698" target="_blank">http://geojson.io</a></p> <textarea name="_geojson" placeholder="GeoJSON" cols=100>' . $geojson . '</textarea>';
 }
 
 function projectmap_save_project()
@@ -134,6 +169,7 @@ function projectmap_save_project()
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return;
     }
+    update_post_meta($post->ID, PLUGIN_NAME . '-status', sanitize_text_field($_POST['_status']));
     update_post_meta($post->ID, PLUGIN_NAME . '-category', sanitize_text_field($_POST['_category']));
     update_post_meta($post->ID, PLUGIN_NAME . '-link', sanitize_text_field($_POST['_link']));
     update_post_meta($post->ID, PLUGIN_NAME . '-description', sanitize_text_field($_POST['_description']));

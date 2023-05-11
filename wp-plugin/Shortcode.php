@@ -12,14 +12,13 @@ class Shortcode
 
     public static function do_shortcode($attributes = [], $content = null, $shortcode_tag)
     {
-        wp_enqueue_style('projectmap', plugins_url('/style.css', __FILE__));
         error_log("shortcode attributes: " . print_r($attributes, true));
 
         $atts = shortcode_atts(
             [
                 "filter" => "true",
                 "colors" => "",
-                "center" => "[52.5051, 13.4334]",
+                "center" => "52.5051, 13.4334",
                 "zoom" => "13"
             ],
             $attributes
@@ -68,6 +67,10 @@ class Shortcode
 
     public static function parseColors($color_string)
     {
+        error_log("color_string: [$color_string]");
+        if($color_string == '') {
+            return '<script>var categoryColors={};</script>';
+        }
         $entries = explode(',', $color_string);
         $return_html = "<script>";
         $return_html .= "var categoryColors={";
